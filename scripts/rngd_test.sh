@@ -19,22 +19,6 @@ for argument in "$@"; do
     esac
 done
 
-if [ -z "${RNGD_URL:-}" ] && [ -f "$HOME/.bashrc" ]; then
-    bashrc_line=$(grep -E '^[[:space:]]*export[[:space:]]+RNGD_URL=' "$HOME/.bashrc" | tail -1 || true)
-    if [ -n "$bashrc_line" ]; then
-        bashrc_value=${bashrc_line#*=}
-        bashrc_value=${bashrc_value%\"}; bashrc_value=${bashrc_value#\"}
-        bashrc_value=${bashrc_value%\'}; bashrc_value=${bashrc_value#\'}
-        export RNGD_URL="$bashrc_value"
-    fi
-fi
-
-if [ -z "${RNGD_URL:-}" ]; then
-    echo "rngd_test.sh: \$RNGD_URL is not set and ~/.bashrc has no export for it." >&2
-    echo "  export RNGD_URL=https://rngd.example.com" >&2
-    exit 2
-fi
-
 find_test_binary() {
     find target/release/deps -maxdepth 1 -type f -name 'test_kernels-*' ! -name '*.d' -perm -u+x \
         2>/dev/null | xargs -r ls -t | head -1
@@ -78,7 +62,7 @@ chmod +x "$staging/remote_entrypoint.sh" "$staging/test_runtime"
 job_name="${RNGD_JOB_NAME:-rngd_test_$RANDOM}"
 
 echo "==> submitting $job_name ($(du -ch "$staging"/* | tail -1 | cut -f1) total)"
-submit_output=$(rngd submit \
+submit_output=$(furiosa-arena submit \
     "$staging/remote_entrypoint.sh" \
     "$staging/test_runtime" \
     "$staging/fixtures.safetensors" \
@@ -89,12 +73,12 @@ echo "$submit_output"
 
 job=$(printf '%s\n' "$submit_output" | sed -n 's/.*submitted job \([0-9][0-9]*\).*/\1/p' | head -1)
 if [ -z "$job" ]; then
-    echo "rngd_test.sh: could not find a job id in rngd's output (shown above)" >&2
+    echo "rngd_test.sh: could not find a job id in furiosa-arena's output (shown above)" >&2
     exit 1
 fi
 
 if [ "$wait_for_result" -eq 0 ]; then
-    echo "==> submitted job $job; follow it with: rngd logs $job"
+    echo "==> submitted job $job; follow it with: furiosa-arena logs $job"
     exit 0
 fi
 
@@ -114,7 +98,7 @@ deadline=$(( SECONDS + TIMEOUT ))
 state=""
 status_output=""
 while [ "$SECONDS" -lt "$deadline" ]; do
-    status_output=$(rngd status "$job" 2>&1 || true)
+    status_output=$(furiosa-arena status "$job" 2>&1 || true)
     state=$(json_field "$status_output" status | tr '[:upper:]' '[:lower:]')
     is_terminal "$state" && break
     case "$state" in
@@ -125,12 +109,12 @@ while [ "$SECONDS" -lt "$deadline" ]; do
 done
 
 if ! is_terminal "$state"; then
-    echo "rngd_test.sh: job $job still '${state:-unknown}' after ${TIMEOUT}s; cancel with: rngd cancel $job" >&2
+    echo "rngd_test.sh: job $job still '${state:-unknown}' after ${TIMEOUT}s; cancel with: furiosa-arena cancel $job" >&2
     exit 1
 fi
 
 code=$(json_field "$status_output" exit_code)
 echo "==> job $job $state (exit ${code:-?}); log follows"
-rngd logs "$job" || true
+furiosa-arena logs "$job" || true
 
 [ "${code:-1}" = "0" ]
