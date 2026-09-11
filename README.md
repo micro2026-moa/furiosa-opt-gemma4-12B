@@ -131,7 +131,7 @@ kernel-tuning, and makespan-comparison workflow.
 ./scripts/rngd_test.sh
 ```
 
-This builds the test binary, submits it through the RNGD scheduler, and reports accuracy
+This builds the test binary, submits it through the Arena server, and reports accuracy
 and real RNGD cycle counts. Use `--no-build` to reuse the latest binary or `--no-wait` to
 submit without waiting for the result.
 
@@ -183,7 +183,7 @@ cargo binstall furiosa-arena-cli
 furiosa-arena login
 ```
 
-The scheduler commands used for troubleshooting are:
+The cli commands used for troubleshooting are:
 
 | Command | Purpose |
 |---|---|

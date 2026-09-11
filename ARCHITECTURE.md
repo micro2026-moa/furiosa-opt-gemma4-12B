@@ -104,7 +104,7 @@ scripts/
 ├── generate_references.py      write ref/fixtures.safetensors (expected outputs only)
 ├── fixture_prng.py             input synthesis; mirrored by test_kernels.rs's prng module
 ├── local_test.sh               run the kernel tests against local Furiosa RNGD
-├── rngd_test.sh                run them on remote Furiosa RNGD via the rngd scheduler
+├── rngd_test.sh                run them on remote Furiosa RNGD via the Arena server
 │
 ├── run.sh                      CLI smoke test via src/bin/gemma4.rs
 ├── run_server.sh               launch the API server with local Furiosa RNGD
@@ -198,7 +198,7 @@ These are the functions the host launches. Each is one RNGD dispatch.
 | `scripts/generate_references.py` | Writes `ref/fixtures.safetensors` by running `scripts/reference/gemma4.py`'s own checkpoint-matched reference modules — no `transformers` dependency. Stores **only expected outputs** (~120 KB); every input is synthesized on both sides instead. Needs no checkpoint. Run it by hand whenever a kernel's expected output changes — no test script generates it for you. |
 | `scripts/fixture_prng.py` | The input synthesis, byte-for-byte mirrored by the `prng` module in `tests/test_kernels.rs`. Values come from a stateless counter hash, so each element depends only on its tensor's name and index and adding a test never moves another's bytes. |
 | `scripts/local_test.sh` | Builds and runs the 3 kernel cases against local Furiosa RNGD, compares them to the fixture, and prints RNGD cycle counts alongside accuracy by default (`TUC_PROFILE_LEVEL=info`; set `=off` to skip). Fails with instructions if the fixture is missing. |
-| `scripts/rngd_test.sh` | Runs the same tests on remote Furiosa RNGD through the `rngd` scheduler: builds `test_kernels`, submits it with `rngd/remote_entrypoint.sh` and the fixture, polls, and prints the log. Needs `$RNGD_URL` and a prior `rngd login`. `--no-build` reuses the last build; `--no-wait` submits and returns immediately. |
+| `scripts/rngd_test.sh` | Runs the same tests on remote Furiosa RNGD through the Arena server: builds `test_kernels`, submits it with `rngd/remote_entrypoint.sh` and the fixture, polls, and prints the log. Needs `$FURIOSA_ARENA_URL` and a prior `furiosa-arena login`. `--no-build` reuses the last build; `--no-wait` submits and returns immediately. |
 | `scripts/rngd/remote_entrypoint.sh` | The rngd job's entrypoint, running on the worker — never invoked by hand; `rngd_test.sh` stages it into the submission. POSIX `sh`; defaults `TUC_PROFILE_LEVEL=info` so the remote run collects cycles too, and copies the binary before `chmod`ing it because companion files arrive owned by another uid. |
 | `scripts/run.sh` | CLI smoke test through `src/bin/gemma4.rs`. Arguments pass through, so `./scripts/run.sh --image path/to.png what is this` works. |
 | `scripts/reference/gemma4.py` | A standalone pure-PyTorch implementation of the architecture (`torch` only — `transformers` is optional, for weight/config loading only). Exists to be read as ground truth beside `axes.rs`, and its `RMSNorm`/`MLP`/`rotate_half` are imported directly by `scripts/generate_references.py` as the reference implementation for the kernel tests. |

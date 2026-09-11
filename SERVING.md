@@ -11,7 +11,7 @@ Access to Furiosa RNGD and a checkpoint is required. Unlike the kernel-optimizat
 the server has no hardware-free path: it loads weights into HBM and runs the model.
 
 - The toolchain from [README.md](README.md#toolchain).
-- A Furiosa RNGD environment, local or through the `rngd` scheduler.
+- A Furiosa RNGD environment, local or through the Arena server.
 - A Gemma-4-12B-it checkpoint in safetensors form.
 
 ## Starting the server
