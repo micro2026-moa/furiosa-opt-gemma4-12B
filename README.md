@@ -150,7 +150,7 @@ For a locally available RNGD setup, the repository also provides:
 cargo binstall moa-submitter-cli
 
 moa-submitter login
-moa-submitter submit         # run from the repository root
+moa-submitter submit         # run from the repository root; auto-detects furiosa-opt-std version
 moa-submitter status         # the state of every submission you have made
 moa-submitter status <id>    # the cycle counts and score of one submission
 moa-submitter log <id>       # the complete log, stage by stage
