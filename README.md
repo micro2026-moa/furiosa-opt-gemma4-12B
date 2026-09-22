@@ -46,9 +46,7 @@ The Stage 1 test checks:
 3. **Performance:** the test reports each kernel's median RNGD cycle count across those 3
    runs, so one unusually fast or slow run doesn't move the number that's graded.
 
-Stage 1 values to be finalized:
-
-- **TBD:** submission deadline.
+**Stage 1 submission deadline: September 30, 2026, 11:59 PM AoE.**
 
 ### Stage 2 — End-to-end optimization
 
@@ -180,6 +178,8 @@ cargo +nightly-2026-05-01 binstall cargo-furiosa-opt@0.8.1
 cargo install furiosa-schedule-viewer
 ```
 
+### Furiosa Arena CLI
+
 Configure the Furiosa Arena CLI once before using `scripts/rngd_test.sh`:
 
 ```sh
@@ -197,6 +197,27 @@ The cli commands used for troubleshooting are:
 | `furiosa-arena logs <id> --follow` | Stream job output |
 | `furiosa-arena list` | List your jobs |
 | `furiosa-arena cancel <id>` | Cancel a queued or running job |
+
+### Baseline source code per `furiosa-opt-std` version
+
+The baseline is published for each supported `furiosa-opt-std` version. Each version's
+baseline code is available under the matching git tag:
+
+| `furiosa-opt-std` | Tag | Checkout |
+|---|---|---|
+| 0.8.1 | `v0.8.1` | `git checkout v0.8.1` |
+| 0.6.0 | `v0.6.0` | `git checkout v0.6.0` |
+
+`main` tracks the latest supported version.
+
+## Source code sharing and competition fairness
+
+Publicly sharing competition source code before the official deadline is strictly
+prohibited. If publicly shared code is copied or plagiarized by another participant, both
+the code provider and the user will be immediately disqualified from receiving any awards.
+If you currently have any competition code publicly accessible, please set it to private or
+remove it immediately. Thank you for your active cooperation in maintaining a fair
+competition environment.
 
 ## References
 
