@@ -12,7 +12,10 @@ pub fn embed_token(
     offset: &HbmTensor<i32, Chip, m![1]>,
     out: &mut HbmTensor<bf16, Chip, m![H]>,
 ) {
-    let row: DmTensor<bf16, Chip, Cluster, Slice, m![H]> = embedding_table.dma_gather_scaled(offset);
+    let row: DmTensor<bf16, Chip, Cluster, Slice, m![H]> = embedding_table
+        .gather::<m![W], m![H]>()
+        .by_byte_offsets(offset)
+        .to_dm(&mut device.tdma);
     let row: DmTensor<bf16, Chip, Cluster, m![H / 240, 1 # 16], m![H % 240]> = row.to_dm(&mut device.tdma);
 
     let result: DmTensor<bf16, Chip, Cluster, m![H / 240, 1 # 16], m![H % 240]> = device
@@ -72,8 +75,16 @@ pub fn sliding_project_qkv(
     let (q, k) = sliding::rope::apply_rope(device, &q, &k, rope_offset, cos, sin);
 
     q.view().to_hbm_view(&mut device.tdma, q_out.view_mut());
-    k.dma_scatter::<m![1], _, _>(kv_offset, k_cache);
-    v.dma_scatter::<m![1], _, _>(kv_offset, v_cache);
+    k_cache
+        .view_mut()
+        .scatter::<m![Ts], m![Ns, Ds]>()
+        .by_byte_offsets(kv_offset.view())
+        .from_dm(&mut device.tdma, k);
+    v_cache
+        .view_mut()
+        .scatter::<m![Ts], m![Ns, Ds]>()
+        .by_byte_offsets(kv_offset.view())
+        .from_dm(&mut device.tdma, v);
 }
 
 #[device(chip = 1)]
@@ -112,8 +123,16 @@ pub fn full_project_qkv(
     let (q, k) = full::rope::apply_rope(device, &q, &k, rope_offset, cos, sin);
 
     q.view().to_hbm_view(&mut device.tdma, q_out.view_mut());
-    k.dma_scatter::<m![1], _, _>(kv_offset, k_cache);
-    v.dma_scatter::<m![1], _, _>(kv_offset, v_cache);
+    k_cache
+        .view_mut()
+        .scatter::<m![Tf], m![Df]>()
+        .by_byte_offsets(kv_offset.view())
+        .from_dm(&mut device.tdma, k);
+    v_cache
+        .view_mut()
+        .scatter::<m![Tf], m![Df]>()
+        .by_byte_offsets(kv_offset.view())
+        .from_dm(&mut device.tdma, v);
 }
 
 #[device(chip = 1)]

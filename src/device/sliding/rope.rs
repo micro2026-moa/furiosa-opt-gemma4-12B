@@ -17,8 +17,14 @@ pub(crate) fn apply_rope(
     DmTensor<bf16, Chip, Cluster, Slice, m![Ns, Gs, Ds]>,
     DmTensor<bf16, Chip, Cluster, Slice, m![Ns, Ds]>,
 ) {
-    let cos: DmTensor<bf16, Chip, Cluster, Slice, m![Ds]> = cos.dma_gather_scaled(rope_offset);
-    let sin: DmTensor<bf16, Chip, Cluster, Slice, m![Ds]> = sin.dma_gather_scaled(rope_offset);
+    let cos: DmTensor<bf16, Chip, Cluster, Slice, m![Ds]> = cos
+        .gather::<m![E], m![Ds]>()
+        .by_byte_offsets(rope_offset)
+        .to_dm(&mut device.tdma);
+    let sin: DmTensor<bf16, Chip, Cluster, Slice, m![Ds]> = sin
+        .gather::<m![E], m![Ds]>()
+        .by_byte_offsets(rope_offset)
+        .to_dm(&mut device.tdma);
 
     let cos: DmTensor<bf16, Chip, Cluster, KvHeadsAcrossSlices, m![Ds]> = cos.to_dm(&mut device.tdma);
     let sin: DmTensor<bf16, Chip, Cluster, KvHeadsAcrossSlices, m![Ds]> = sin.to_dm(&mut device.tdma);
