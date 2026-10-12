@@ -148,7 +148,7 @@ Stage 1 and remains unoptimized, so optimizing it is recommended as the first st
 cargo binstall moa-submitter-cli   # run again to update an installed version for Stage 2
 
 moa-submitter login
-moa-submitter submit         # run from the repository root
+moa-submitter submit         # run from the repository root; auto-detects furiosa-opt-std
 moa-submitter submit --concurrency 4   # concurrent requests, default 1
 moa-submitter status         # the state of every submission you have made
 moa-submitter status <id>    # the results and score of one submission
@@ -218,6 +218,18 @@ The cli commands used for troubleshooting are:
 | `furiosa-arena logs <id> --follow` | Stream job output |
 | `furiosa-arena list` | List your jobs |
 | `furiosa-arena cancel <id>` | Cancel a queued or running job |
+
+### Baseline source code per `furiosa-opt-std` version
+
+The baseline is published for each supported `furiosa-opt-std` version. Each version's
+baseline code is available under the matching git tag:
+
+| `furiosa-opt-std` | Tag | Checkout |
+|---|---|---|
+| 0.8.1 | `v0.8.1` | `git checkout v0.8.1` |
+| 0.9.0 | `v0.9.0` | `git checkout v0.9.0` |
+
+`main` tracks the latest supported version.
 
 ## Source code sharing and competition fairness
 
